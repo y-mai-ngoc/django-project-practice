@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<article class="mb-5">
+    {% if post.featured_image %}
+    <img src="{{ post.featured_image.url }}" class="img-fluid rounded mb-4"
+         alt="{{ post.title }}" style="max-height: 400px; width: 100%; object-fit: cover;">
+    {% endif %}
+
+    <h1>{{ post.title }}</h1>
+
+    <div class="text-muted mb-4">
+        By <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+        | {{ post.published_at|date:"d M Y H:i" }}
+        {% if post.category %}
+        | <a href="{{ post.category.get_absolute_url }}">{{ post.category.name }}</a>
+        {% endif %}
+        | {{ post.views_count }} views
+        | {{ post.reading_time }} min read
+    </div>
+
+    {% if post.tags.exists %}
+    <div class="mb-3">
+        {% for tag in post.tags.all %}
+        <span class="badge bg-secondary">{{ tag.name }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="post-body fs-5 lh-lg">
+        {{ post.body|linebreaksbr }}
+    </div>
+
+    {% if user == post.author %}
+    <div class="mt-4">
+        <a href="{% url 'blog:post_update' post.slug %}" class="btn btn-outline-warning">Edit</a>
+        <a href="{% url 'blog:post_delete' post.slug %}" class="btn btn-outline-danger">Delete</a>
+    </div>
+    {% endif %}
+</article>
+
+<!-- Related Posts -->
+{% if related_posts %}
+<section class="mb-5">
+    <h3>Related Posts</h3>
+    <div class="row">
+        {% for rpost in related_posts %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5><a href="{{ rpost.get_absolute_url }}">{{ rpost.title }}</a></h5>
+                    <small class="text-muted">{{ rpost.published_at|date:"d M Y" }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Comments Section with HTMX -->
+<section id="comments">
+    <h3 class="mb-3">
+        Comments ({{ comments|length }})
+    </h3>
+
+    <!-- Comment Form - submits via HTMX -->
+    {% if user.is_authenticated %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Leave a Comment</h5>
+            <form hx-post="{% url 'blog:add_comment' post.slug %}"
+                  hx-target="#comment-list"
+                  hx-swap="afterbegin"
+                  hx-on::after-request="this.reset()">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <input type="text" name="author_name" class="form-control"
+                           placeholder="Your name" value="{{ user.get_full_name|default:user.username }}" required>
+                </div>
+                <div class="mb-2">
+                    <input type="email" name="email" class="form-control"
+                           placeholder="Email" value="{{ user.email }}" required>
+                </div>
+                <div class="mb-2">
+                    <textarea name="body" class="form-control" rows="3"
+                              placeholder="Write your comment..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p><a href="{% url 'accounts:login' %}">Login</a> to leave a comment.</p>
+    {% endif %}
+
+    <!-- Comment List -->
+    <div id="comment-list">
+        {% for comment in comments %}
+        {% include 'blog/partials/comment.html' %}
+        {% empty %}
+        <p class="text-muted">No comments yet. Be the first!</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

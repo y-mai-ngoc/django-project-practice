@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Blog Posts{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-md-8">
+        <h1 class="mb-4">
+            {% if query %}Search: "{{ query }}"
+            {% elif current_category %}Category: {{ current_category }}
+            {% else %}Latest Posts
+            {% endif %}
+        </h1>
+
+        <!-- Search Bar with HTMX Live Search -->
+        <div class="mb-4">
+            <input type="text"
+                   class="form-control form-control-lg"
+                   name="q"
+                   value="{{ query }}"
+                   placeholder="Search posts..."
+                   hx-get="{% url 'blog:search_results' %}"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-target="#search-results"
+                   hx-indicator="#search-spinner">
+            <div id="search-spinner" class="htmx-indicator text-center py-2">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+                Searching...
+            </div>
+            <div id="search-results"></div>
+        </div>
+
+        <!-- Post List -->
+        <div id="post-list">
+            {% include 'blog/partials/post_list_partial.html' %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">Categories</div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li>
+                        <a href="{% url 'blog:post_list' %}"
+                           class="{% if not current_category %}fw-bold{% endif %}">
+                            All Posts
+                        </a>
+                    </li>
+                    {% for cat in categories %}
+                    <li>
+                        <a href="{% url 'blog:category_posts' cat.slug %}"
+                           class="{% if current_category == cat.slug %}fw-bold{% endif %}">
+                            {{ cat.name }}
+                            <span class="badge bg-secondary">{{ cat.post_count }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

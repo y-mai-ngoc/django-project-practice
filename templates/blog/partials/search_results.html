@@ -1,0 +1,17 @@
+{% if posts %}
+<div class="list-group mt-2 shadow-sm">
+    {% for post in posts %}
+    <a href="{{ post.get_absolute_url }}" class="list-group-item list-group-item-action">
+        <div class="d-flex justify-content-between">
+            <strong>{{ post.title }}</strong>
+            <small class="text-muted">{{ post.published_at|date:"d/m/Y" }}</small>
+        </div>
+        <small class="text-muted">{{ post.excerpt|truncatewords:15 }}</small>
+    </a>
+    {% endfor %}
+</div>
+{% elif query %}
+<div class="alert alert-light mt-2">
+    No results for "<strong>{{ query }}</strong>"
+</div>
+{% endif %}

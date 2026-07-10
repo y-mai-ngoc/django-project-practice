@@ -1,0 +1,11 @@
+/* Custom styles for Django Blog */
+body { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+.post-body { line-height: 1.8; }
+.editable { cursor: pointer; border-bottom: 1px dashed #ccc; }
+.editable:hover { background: #f0f8ff; }
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+.htmx-request.htmx-indicator { display: inline-block; }
+.card { transition: box-shadow 0.2s; }
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
